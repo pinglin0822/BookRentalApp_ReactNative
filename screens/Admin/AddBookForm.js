@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button,Switch, StyleSheet } from 'react-native';
-import { insertBook,createTable } from '../services/BooksService'; // Assuming this is the correct import path
+import { insertBook, createTable, borrowBook } from '../../services/BooksService';
 
 export function AddBookForm() {
   const [title, setTitle] = useState('');
@@ -24,7 +24,7 @@ export function AddBookForm() {
 
       const insertedId = await insertBook(newBook);
       console.log('Book inserted with ID:', insertedId);
-
+      
       // Reset form fields after successful insertion
       setTitle('');
       setImage('');
@@ -71,7 +71,6 @@ export function AddBookForm() {
         onChangeText={setAuthor}
       />
 
-      {/* Other input fields for image, availability, description, author */}
       <Button title="Add Book" onPress={handleAddBook} />
     </View>
   );

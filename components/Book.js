@@ -1,9 +1,9 @@
 import React from "react";
 import {Text,Image,View,StyleSheet,TouchableOpacity} from "react-native";
 
-export function Book({title,image,author,availability, onPress}){
+export function Book({title,image,author,availability, isSelected, onPress}){
     return(
-        <TouchableOpacity onPress={onPress} style={styles.card}>
+        <TouchableOpacity onPress={onPress} style={[styles.card, isSelected && styles.selectedCard]}>
             <View style={styles.bookinfo}>
                 <Image style={styles.image} source={image} />
                 <View style={styles.infoContainer}>
@@ -33,6 +33,10 @@ const styles = StyleSheet.create({
         justifyContent:"space-between"
         
     },
+    selectedCard: {
+        borderColor: '#f7e00f', 
+        borderWidth: 2,
+      },
     bookinfo:{
         flexDirection:'row',
         alignItems: 'center',

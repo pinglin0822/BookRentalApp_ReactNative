@@ -1,26 +1,27 @@
 import React, {Component} from 'react';
 import {StyleSheet, Button, Text, View} from 'react-native';
-export default class HomeScreen extends Component<Props> {
+export default class HomeScreen extends Component  {
   /**
    * A screen component can set navigation options such as the title.
    */
   render () {
+
+    const {navigate} = this.props.navigation;
     return (
       <View style={styles.container}>
-        <Text style={styles.title}>Home</Text>
         <View style={styles.button}>
           <Button
-            title="BookList"
+            title="Client"
             onPress={() => {
-              this.props.navigation.navigate ('Books');
+              this.props.navigation.navigate ('Client');
             }}
           />
         </View>
         <View style={styles.button}>
           <Button
-            title="AddBookForm"
+            title="Admin"
             onPress={() => {
-              this.props.navigation.navigate ('AddBookForm');
+              this.props.navigation.navigate ('Admin');
             }}
           />
         </View>

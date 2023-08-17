@@ -9,7 +9,7 @@ export function BookList ({navigation}){
             <Book
                 {...book}
                 onPress={()=>{
-                    navigation.navigate("BookDetails",{bookID: book.id})
+                    navigation.navigate("BookDetails",{ bookID: book.id}) /* bookID: book.id, userId: */
                 }}
             />
         )
