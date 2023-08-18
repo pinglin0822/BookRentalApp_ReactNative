@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Button, FlatList, StyleSheet, Alert, Text,Image,TouchableOpacity } from 'react-native';
 import { getBorrowedBooks, removeBorrowedBook, updateAvailability } from '../../services/BooksService'; 
 
-export function BorrowedList({image}) {
+export function BorrowedList({image,navigation}) {
   const [borrowedBooks, setBorrowedBooks] = useState([]);
   const [selectedBooks, setSelectedBooks] = useState([]);
 
@@ -60,8 +60,10 @@ export function BorrowedList({image}) {
           onPress: async () => {
             try {
               for (const bookId of selectedBooks) {
-                await removeBorrowedBook(bookId);
                 await updateAvailability(bookId, true);
+                console.log('Availability updated');
+                await removeBorrowedBook(bookId);
+                console.log('removed updated');
               }
               const updatedBorrowedBooks = borrowedBooks.filter(
                 (book) => !selectedBooks.includes(book.id)
@@ -69,7 +71,8 @@ export function BorrowedList({image}) {
               setBorrowedBooks(updatedBorrowedBooks);
 
 
-              showAlert('Book Returned', 'The book has been successfully returned.');
+              Alert.alert('Book Returned', 'The book has been successfully returned.',
+              [{ text: 'OK', onPress: () => navigation.goBack() }]);
             } catch (error) {
               console.error('Error returning book:', error);
 

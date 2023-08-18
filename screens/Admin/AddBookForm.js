@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button,Switch, StyleSheet } from 'react-native';
-import { insertBook, createTable, borrowBook } from '../../services/BooksService';
+import { insertBook, createTable } from '../../services/BooksService';
 
 export function AddBookForm() {
   const [title, setTitle] = useState('');

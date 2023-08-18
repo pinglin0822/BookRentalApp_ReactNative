@@ -283,6 +283,23 @@ const createTable = () => {
     });
   }
 
+  export function removeFavouriteBook(bookId) {
+    return new Promise((resolve, reject) => {
+      db.transaction((tx) => {
+        tx.executeSql(
+          'DELETE FROM favourite WHERE id = ?',
+          [bookId],
+          (_, result) => {
+            resolve(result.rowsAffected);
+          },
+          (_, error) => {
+            reject(error);
+          }
+        );
+      });
+    });
+  }
+
   export function updateTitle(bookId, newTitle) {
     return new Promise((resolve, reject) => {
       db.transaction((tx) => {
@@ -352,8 +369,6 @@ const createTable = () => {
     });
   }
 
- 
-  
   export function removeBorrowedBook(bookId) {
     return new Promise((resolve, reject) => {
       db.transaction((tx) => {

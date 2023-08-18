@@ -150,6 +150,7 @@ export function BookDetails({ route, navigation }) {
           mode='date'
           open = {open}
           date = {borrowDate}
+          minimumDate={new Date()}
           onConfirm = {(selectedDate) => {
             setOpen(false);
             setBorrowDate(selectedDate);
