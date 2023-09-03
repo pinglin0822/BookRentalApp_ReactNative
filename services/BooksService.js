@@ -5,6 +5,16 @@ const db = SQLite.openDatabase({ name: 'mydb.db', location: 'default' });
 const createTable = () => {
     db.transaction((tx) => {
       tx.executeSql(
+        'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT, password TEXT, type TEXT)',
+        [],
+        () => {
+          console.log('Table created successfully');
+        },
+        (error) => {
+          console.log('Error creating categories table:', error);
+        }
+      );
+      tx.executeSql(
         'CREATE TABLE IF NOT EXISTS books (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, image TEXT, availability INTEGER, description TEXT, author TEXT)',
         [],
         () => {
@@ -14,16 +24,7 @@ const createTable = () => {
           console.log('Error creating table:', error);
         }
       );
-      tx.executeSql(
-        'CREATE TABLE IF NOT EXISTS user (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT, password TEXT, type TEXT)',
-        [],
-        () => {
-          console.log('Table created successfully');
-        },
-        (error) => {
-          console.log('Error creating categories table:', error);
-        }
-      );
+      
       tx.executeSql(
         'CREATE TABLE IF NOT EXISTS borrowedBook (id INTEGER PRIMARY KEY AUTOINCREMENT, bookId INTEGER, borrowDate TEXT, returnDate TEXT)',
         [],
@@ -48,23 +49,54 @@ const createTable = () => {
   };
   
   export { createTable };
-
+  
+  export function signInUser(email, password) {
+    return new Promise((resolve, reject) => {
+      db.transaction((tx) => {
+        tx.executeSql(
+          'SELECT * FROM users WHERE email = ? AND password = ?',
+          [email, password],
+          (_, result) => {
+            if (result.rows.length === 1) {
+              const user = result.rows.item(0);
+              resolve(user); // Resolve with the user object, including userType
+            } else {
+              reject(new Error('Invalid email or password.'));
+            }
+          },
+          (_, error) => {
+            reject(new Error(`Error fetching user: ${error.message}`));
+          }
+        );
+      });
+    });
+  }
+  
+  
+  
   export function insertUser(name, email, password, type) {
     return new Promise((resolve, reject) => {
       db.transaction((tx) => {
         tx.executeSql(
-          'INSERT INTO user (name, email, password, type) VALUES (?, ?, ?, ?)',
+          'INSERT INTO users (name, email, password, type) VALUES (?, ?, ?, ?)',
           [name, email, password, type],
           (_, result) => {
             resolve(result.insertId);
           },
           (_, error) => {
+            console.error('Error during user insertion:', error.message); // Log the SQLite error message
             reject(error);
           }
         );
       });
     });
   }
+  
+  
+  
+  
+  
+  
 
   export function insertBook(book) {
     return new Promise((resolve, reject) => {

@@ -17,6 +17,8 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import {LogBox} from 'react-native';
 LogBox.ignoreLogs (['EventEmitter.removeListener']);
 
+import { Login, Signup } from "./screens";
+
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -25,7 +27,22 @@ export default class App extends Component {
   render() {
     return (
       <NavigationContainer>
-        <Stack.Navigator initialRouteName="Home">
+        <Stack.Navigator initialRouteName="Login">
+      
+        <Stack.Screen
+          name="Login"
+          component={Login}
+          options={{
+            headerShown: false
+          }}
+        />
+        <Stack.Screen
+          name="Signup"
+          component={Signup}
+          options={{
+            headerShown: false
+          }}
+        />
         <Stack.Screen name="Client" component={ClientPage}/>
         <Stack.Screen name="Admin" component={AdminPage}/>
         <Stack.Screen name="Books" component={BookList}/>
