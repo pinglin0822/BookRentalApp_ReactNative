@@ -5,7 +5,7 @@ import COLORS from '../constants/colors';
 import { Ionicons } from "@expo/vector-icons";
 import Checkbox from "expo-checkbox"
 import Button from '../components/Button';
-import { insertUser  } from "../services/BooksService";
+import { insertUser,createTable  } from "../services/BooksService";
 
 
 const Signup = ({ navigation }) => {
@@ -18,6 +18,7 @@ const [name, setName] = useState('');
 
   const handleSignUp =  async () => {
     console.log('Handling sign up...');
+    await createTable();
   
     try {
       if (!email || !password || !name) {
