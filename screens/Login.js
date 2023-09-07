@@ -70,15 +70,7 @@ const Login = ({ navigation }) => {
                     }}>
                         Hi Welcome to Book Buddy! 👋
                     </Text>
-                    <Image
-                            source={require("../assets/login.png")}
-                            style={{
-                                height: 120,
-                                width: 120,
-                                marginRight: 20
-                            }}
-                            resizeMode='contain'
-                        />
+                   
                     <Text style={{
                         fontSize: 16,
                         color: COLORS.black
