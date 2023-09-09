@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Text, StyleSheet, View, Image, ScrollView, Alert, SafeAreaView, Button  } from 'react-native';
-import { getBook, borrowBook , checkBookAvailability, toggleBookFavoriteStatus, isBookInFavorites, updateAvailability } from '../services/BooksService';
+import { Text, StyleSheet, View, Image, ScrollView, Alert, SafeAreaView, Button } from 'react-native';
+import { getBook, borrowBook, checkBookAvailability, toggleBookFavoriteStatus, isBookInFavorites, updateAvailability } from '../services/BooksService';
 import DatePicker from 'react-native-date-picker'
 
 export function BookDetails({ route, navigation }) {
@@ -9,7 +9,7 @@ export function BookDetails({ route, navigation }) {
   const { setFavoriteBooks } = route.params;
   const [isFavorite, setIsFavorite] = useState(false);
   const [notification, setNotification] = useState({ message: '', isVisible: false });
-  const [borrowDate, setBorrowDate] = useState(new Date()); 
+  const [borrowDate, setBorrowDate] = useState(new Date());
   const [open, setOpen] = useState(false);
 
 
@@ -30,7 +30,7 @@ export function BookDetails({ route, navigation }) {
 
     fetchBookDetails();
   }, [bookID]);
-  
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setNotification({ ...notification, isVisible: false });
@@ -50,7 +50,7 @@ export function BookDetails({ route, navigation }) {
   }, [updateFavoriteStatus, navigation]);
 
   //Add and remove from Favourite
-  const onAddToFav = async() =>{
+  const onAddToFav = async () => {
     try {
       if (isFavorite) {
         // Remove the book from favorites
@@ -65,7 +65,7 @@ export function BookDetails({ route, navigation }) {
         await toggleBookFavoriteStatus(bookID);
         setIsFavorite(true);
         setFavoriteBooks((prevBooks) => [...prevBooks, book]);
-        setNotification({ message: 'Added to Favorites', isVisible: true });   Alert.alert('Added to Favorites', 'This book has been added to your favorites.');
+        setNotification({ message: 'Added to Favorites', isVisible: true }); Alert.alert('Added to Favorites', 'This book has been added to your favorites.');
       }
     } catch (error) {
       console.error('Error adding/removing book from favorites:', error);
@@ -86,10 +86,10 @@ export function BookDetails({ route, navigation }) {
   const onBorrowBook = async (selectedDate) => {
     try {
       const isAvailable = await checkBookAvailability(bookID);
-      
+
       if (isAvailable == 1) {
         setOpen(true);
-        
+
         const returnDate = new Date(selectedDate);
         returnDate.setDate(returnDate.getDate() + 14); // Adding 14 days
 
@@ -101,15 +101,15 @@ export function BookDetails({ route, navigation }) {
 
         setNotification({ message: 'Book Borrowed Successfully', isVisible: true });
         setOpen(false);
-        
+
         try {
           const detailsMessage = `${book.title} \n\nBorrowed on: \n${formattedSelectedDate}\n\nPlease return it by: \n${formattedReturnDate}`;
-          
+
           Alert.alert(
             'Borrow Successful',
             `You have successfully borrowed ${detailsMessage}`,
             [{ text: 'OK', onPress: () => navigation.goBack() }]
-            
+
           );
 
         } catch (error) {
@@ -117,11 +117,11 @@ export function BookDetails({ route, navigation }) {
           // Handle the error (e.g., show an error message to the user)
         }
 
-      }else{
+      } else {
         Alert.alert('Book Not Available', 'This book is currently not available for borrowing.');
         return;
       }
-      } catch (error) {
+    } catch (error) {
       console.error('Error borrowing book:', error);
     }
   };
@@ -146,24 +146,24 @@ export function BookDetails({ route, navigation }) {
         <View style={styles.infoContainer}>
           <Button onPress={onBorrowBook} color="#f7e00f" title="Borrow Book" />
           <DatePicker
-          modal
-          mode='date'
-          open = {open}
-          date = {borrowDate}
-          minimumDate={new Date()}
-          onConfirm = {(selectedDate) => {
-            setOpen(false);
-            setBorrowDate(selectedDate);
-            onBorrowBook(selectedDate);
-          }}
-          onCancel = {() => {
-            setOpen(false);
-          }
-          }
+            modal
+            mode='date'
+            open={open}
+            date={borrowDate}
+            minimumDate={new Date()}
+            onConfirm={(selectedDate) => {
+              setOpen(false);
+              setBorrowDate(selectedDate);
+              onBorrowBook(selectedDate);
+            }}
+            onCancel={() => {
+              setOpen(false);
+            }
+            }
           />
-          
+
         </View>
-        
+
       </ScrollView>
     </SafeAreaView>
   );
@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     color: 'black',
   },
-  
+
   notification: {
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
     position: 'absolute',
@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
   },
 
   calendarContainer: {
-    flex: 1, // Adjust the flex value as needed to allocate space
+    flex: 1,
     marginVertical: 20,
     paddingHorizontal: 16,
   },

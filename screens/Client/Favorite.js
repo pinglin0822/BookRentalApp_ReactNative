@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, Alert, Button } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { getFavoriteBooks, borrowBook, getBook, checkBookAvailability , updateAvailability } from '../../services/BooksService'; 
+import { getFavoriteBooks, borrowBook, getBook, checkBookAvailability, updateAvailability } from '../../services/BooksService';
 import { Book } from '../../components/Book';
 import DatePicker from 'react-native-date-picker'
 
@@ -35,7 +35,7 @@ export function Favorite() {
       Alert.alert('Book Not Available', 'This book is currently not available for borrowing.');
       return;
     }
-    
+
     const updatedSelectedBooks = selectedBooks.includes(bookId)
       ? selectedBooks.filter(id => id !== bookId)
       : [...selectedBooks, bookId];
@@ -65,15 +65,15 @@ export function Favorite() {
 
   const handleDateConfirm = async (selectedDate) => {
     try {
-        const borrowDate = selectedDate.toLocaleDateString();
-        const borrowedBooks = await Promise.all(selectedBooks.map(async (bookId) => {
+      const borrowDate = selectedDate.toLocaleDateString();
+      const borrowedBooks = await Promise.all(selectedBooks.map(async (bookId) => {
         const book = await getBook(bookId);
         const returnDate = new Date(borrowDate);
         returnDate.setDate(returnDate.getDate() + 14);
         const formattedReturnDate = returnDate.toLocaleDateString();
 
         await updateAvailability(bookId, false);
-        await borrowBook(bookId, borrowDate, formattedReturnDate );
+        await borrowBook(bookId, borrowDate, formattedReturnDate);
         setOpen(false);
 
         return { book, borrowDate, formattedReturnDate };
@@ -120,27 +120,32 @@ export function Favorite() {
         data={favoriteBooks}
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderBook}
+        numColumns={2}
       />
-      <Button
-        title="Borrow Selected Books"
-        onPress={handleBorrowBooks}
-        disabled={selectedBooks.length === 0}
-      />
+
+      <View style={styles.select}>
+        <Button
+          title="Borrow Selected Books"
+          onPress={handleBorrowBooks}
+          disabled={selectedBooks.length === 0}
+        />
+      </View>
+
       <DatePicker
         modal
         mode='date'
-        open = {open}
-        date = {selectedStartDate}
-        onConfirm = {(selectedDate) => {
+        open={open}
+        date={selectedStartDate}
+        onConfirm={(selectedDate) => {
           setOpen(false);
           setSelectedStartDate(selectedDate);
           handleDateConfirm(selectedDate);
-          }}
-        onCancel = {() => {
+        }}
+        onCancel={() => {
           setOpen(false);
         }
         }
-        />
+      />
     </View>
   );
 }
@@ -149,46 +154,54 @@ const styles = StyleSheet.create({
   bookList: {
     backgroundColor: "#eeeeee",
   },
-    title: {
-      fontSize: 24,
-      fontWeight: 'bold',
-      color: 'black',
-    },
-    author: {
-      fontSize: 16,
-      fontWeight: '600',
-      marginBottom: 8,
-      color: 'grey',
-    },
-    descriptionHeader: {
-      fontSize: 24,
-      fontWeight: '600',
-      marginBottom: 8,
-      color: 'black',
-    },
-    description: {
-      fontSize: 18,
-      fontWeight: '400',
-      color: '#787878',
-      marginBottom: 16,
-      color: 'black',
-    },
-    borrow: {
-      marginTop: '5%',
-    },
-    notification: {
-      backgroundColor: 'rgba(0, 0, 0, 0.8)',
-      position: 'absolute',
-      bottom: 20,
-      left: 20,
-      right: 20,
-      padding: 10,
-      borderRadius: 8,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    notificationText: {
-      color: 'white',
-      fontSize: 16,
-    },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: 'black',
+  },
+  author: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
+    color: 'grey',
+  },
+  descriptionHeader: {
+    fontSize: 24,
+    fontWeight: '600',
+    marginBottom: 8,
+    color: 'black',
+  },
+  description: {
+    fontSize: 18,
+    fontWeight: '400',
+    color: '#787878',
+    marginBottom: 16,
+    color: 'black',
+  },
+  borrow: {
+    marginTop: '5%',
+  },
+  select: {
+    position: 'absolute',
+    bottom: 0,
+    left: 20,
+    right: 20,
+    padding: 0,
+  },
+
+  notification: {
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    position: 'absolute',
+    bottom: 20,
+    left: 20,
+    right: 20,
+    padding: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  notificationText: {
+    color: 'white',
+    fontSize: 16,
+  },
 });

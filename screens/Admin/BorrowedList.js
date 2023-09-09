@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Button, FlatList, StyleSheet, Alert, Text,Image,TouchableOpacity } from 'react-native';
-import { getBorrowedBooks, removeBorrowedBook, updateAvailability } from '../../services/BooksService'; 
+import { View, Button, FlatList, StyleSheet, Alert, Text, Image, TouchableOpacity } from 'react-native';
+import { getBorrowedBooks, removeBorrowedBook, updateAvailability } from '../../services/BooksService';
 
-export function BorrowedList({image,navigation}) {
+export function BorrowedList({ image, navigation }) {
   const [borrowedBooks, setBorrowedBooks] = useState([]);
   const [selectedBooks, setSelectedBooks] = useState([]);
 
@@ -19,7 +19,7 @@ export function BorrowedList({image,navigation}) {
     fetchBorrowedBooks();
   }, []);
 
-  function toggleBookSelection(bookId){
+  function toggleBookSelection(bookId) {
     const updatedSelectedBooks = selectedBooks.includes(bookId)
       ? selectedBooks.filter(id => id !== bookId)
       : [...selectedBooks, bookId];
@@ -30,25 +30,27 @@ export function BorrowedList({image,navigation}) {
 
   function renderBook({ item: book }) {
     const isSelected = selectedBooks.includes(book.id);
-    
+
     return (
       <View style={styles.bookContainer}>
-      <Image style={styles.image} source={image} />
+        <Image style={styles.image} source={{ uri: book.image }} />
         <View style={styles.bookInfo}>
           <Text style={styles.bookTitle}>{book.title}</Text>
           <Text style={styles.bookAuthor}>By {book.author}</Text>
           <Text style={styles.borrowedDate}>Borrowed: {book.borrowDate}</Text>
           <Text style={styles.returnDate}>Return: {book.returnDate}</Text>
         </View>
-        <Button
-          title={isSelected ? 'Selected' : 'Select'}
+        <TouchableOpacity // Changed from Button to TouchableOpacity
+          style={[styles.selectButton, isSelected && styles.selectedButton]} // Conditional styling
           onPress={() => toggleBookSelection(book.id)}
-        />
+        >
+          <Text style={styles.selectButtonText}>{isSelected ? 'Selected' : 'Select'}</Text>
+        </TouchableOpacity>
       </View>
     );
   }
-  
-  const returnBook = ()=> {
+
+  const returnBook = () => {
     Alert.alert(
       'Return Book',
       'Are you sure these books had been returned?',
@@ -72,11 +74,11 @@ export function BorrowedList({image,navigation}) {
 
 
               Alert.alert('Book Returned', 'The book has been successfully returned.',
-              [{ text: 'OK', onPress: () => navigation.goBack() }]);
+                [{ text: 'OK', onPress: () => navigation.goBack() }]);
             } catch (error) {
               console.error('Error returning book:', error);
 
-            }finally {
+            } finally {
               setSelectedBooks([]);
 
             }
@@ -96,11 +98,11 @@ export function BorrowedList({image,navigation}) {
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderBook}
       />
+
       <Button
         title=" Returned "
         onPress={returnBook}
         disabled={selectedBooks.length === 0}
-    
       />
     </View>
   );
@@ -136,7 +138,7 @@ const styles = StyleSheet.create({
   bookInfo: {
     flex: 1,
     marginLeft: 10,
-    justifyContent: 'center', 
+    justifyContent: 'center',
   },
   bookTitle: {
     fontSize: 18,
@@ -156,12 +158,22 @@ const styles = StyleSheet.create({
     color: 'red',
     marginTop: 4,
   },
-  selectButton:{
+  selectButton: {
     backgroundColor: '#007AFF',
     borderRadius: 4,
-    padding: 10,
+    paddingVertical: 20,
+    paddingHorizontal: 5,
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: 20,
+    marginBottom: 40,
+  },
+  selectButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  selectedButton: {
+    backgroundColor: 'green',
   }
 });
 

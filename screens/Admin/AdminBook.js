@@ -1,19 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Alert, Modal, TextInput, ScrollView, Image, Switch, FlatList } from 'react-native';
+import { View, Text, TouchableOpacity, TouchableHighlight, Alert, Image } from 'react-native';
 import SQLite from 'react-native-sqlite-storage';
-import { getBookList, deleteBook, updateTitle, updateAuthor, updateDescription, updateAvailability } from '../../services/BooksService';
+import { deleteBook } from '../../services/BooksService';
+import { SwipeListView } from 'react-native-swipe-list-view';
 
 const db = SQLite.openDatabase({ name: 'mydb.db', location: 'default' });
 
-const AdminBook = ({image}) => {
+export function AdminBook({ navigation }) {
   const [tableData, setTableData] = useState([]);
-  const [newTitleInput, setNewTitleInput] = useState('');
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedBookIndex, setSelectedBookIndex] = useState(null);
-  const [updateOption, setUpdateOption] = useState('');
-  const [isCustomModalVisible, setIsCustomModalVisible] = useState(false);
-  const [customOptions, setCustomOptions] = useState([]);
-  const [availability, setAvailability] = useState(false);
+
+
 
   useEffect(() => {
     fetchDataFromDatabase();
@@ -22,7 +18,7 @@ const AdminBook = ({image}) => {
   const fetchDataFromDatabase = () => {
     db.transaction(tx => {
       tx.executeSql(
-        'SELECT id, title, author, description, availability FROM books',
+        'SELECT id, image,title, author, description, availability FROM books',
         [],
         (_, result) => {
           const fetchedData = [];
@@ -30,6 +26,7 @@ const AdminBook = ({image}) => {
             const row = result.rows.item(i);
             fetchedData.push({
               id: row.id,
+              image: row.image,
               title: row.title,
               author: row.author,
               description: row.description,
@@ -45,75 +42,6 @@ const AdminBook = ({image}) => {
     });
   };
 
-  const updateBook = index => {
-    const options = ['Title', 'Author', 'Description', 'Availability'];
-  
-    const customOptions = options.map((option, optionIndex) => ({
-      text: option,
-      onPress: () => handleUpdateOption(optionIndex, index),
-    }));
-  
-    setCustomOptions(customOptions);
-    setIsCustomModalVisible(true);
-  };
-
-  const handleUpdateOption = (optionIndex, bookIndex) => {
-  const updateOptions = ['title', 'author', 'description', 'availability'];
-  setSelectedBookIndex(bookIndex);
-  setUpdateOption(updateOptions[optionIndex]);
-  setIsCustomModalVisible(false);
-  setIsModalVisible(true);
-};
-
-  const updateAttribute = async (bookIndex, newValue) => {
-    try {
-      const bookId = tableData[bookIndex].id;
-      switch (updateOption) {
-        case 'title':
-          await updateTitle(bookId, newValue);
-          updateTableData(bookIndex, [newTitleInput, 2]);
-          break;
-        case 'author':
-          await updateAuthor(bookId, newValue);
-          updateTableData(bookIndex, [newTitleInput, 2]);
-          break;
-        case 'description':
-          await updateDescription(bookId, newValue);
-          updateTableData(bookIndex, [newTitleInput, 3]);
-          break;
-        case 'availability':
-          await updateAvailability(bookId, availability);
-          updateTableData(bookIndex, [availability === 1 ? 'Available' : 'Not Available', 4]);
-          setAvailability(false);
-          break;
-        default:
-          break;
-      }
-      closeModalAndClearInput();
-      showAlert(`${capitalize(updateOption)} Updated`, `The ${updateOption} has been successfully updated.`);
-    } catch (error) {
-      console.error('Error updating attribute:', error);
-    }
-  };
-
-  const updateTableData = (bookIndex, newData) => {
-    const updatedTableData = tableData.map((rowData, index) => {
-      if (index === bookIndex) {
-        return { ...rowData, [newData[1]]: newData[0] };
-      }
-      return rowData;
-    });
-    setTableData(updatedTableData);
-  };
-
-  const closeModalAndClearInput = () => {
-    setIsModalVisible(false);
-    setNewTitleInput('');
-  };
-
-  const capitalize = (str) => {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-  };
 
   const showAlert = (title, message) => {
     Alert.alert(title, message);
@@ -145,201 +73,139 @@ const AdminBook = ({image}) => {
     );
   };
 
-
-
-  function renderItem  ({ item: book, index  })  {
-    return(
-
-    <View style={styles.bookContainer}>
-      <Image style={styles.image} source={image} />
-        <View style={styles.bookInfo}>
-          <Text style={styles.title}>{book.title}</Text>
-          <Text style={styles.author}>Author: {book.author}</Text>
-          <Text style={styles.description}>Description: {'\n'}{book.description}</Text>
-          <View style={styles.availableContainer}>
-                {book.availability ? (
-                    <Text style={styles.available}>Available</Text>
-                ) : (
-                    <Text style={styles.notAvailable}>Not Available</Text>
-                )}
-            </View>
-        </View>
-
-        <TouchableOpacity onPress={() => updateBook(index)}>
-        <View style={styles.update}>
-          <Text style={styles.updateButton}>Update</Text>
-        </View>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => removeBook(index)}>
-        <View style={styles.remove}>
-          <Text style={styles.removeButton}>Remove</Text>
-        </View>
-      </TouchableOpacity>
-    </View>
-    )
-
-  }
- 
-  
-   return (
+  return (
     <View style={styles.container}>
-       <ScrollView>
-        <FlatList
-        numColumns={2}
-          data={tableData}
-          keyExtractor={item => item.id.toString()}
-          renderItem={renderItem}
-        />
-      </ScrollView>
+      <SwipeListView
+        data={tableData}
+        keyExtractor={item => item.id.toString()}
 
-      <Modal
-        visible={isModalVisible}
-        onRequestClose={() => closeModalAndClearInput()}
-        transparent={true}
-      >
-        <View style={styles.modalContainer}>
-        <View style={styles.modalContent}>
-          {updateOption === 'availability' ? (
-            <View style={styles.switchContainer}>
-               <Text style={styles.availabilityText}>Available:</Text>
-              <Switch value={availability} onValueChange={(value) => setAvailability(value)} />
-              <TouchableOpacity
-                style={styles.modalButton}
-                onPress={() => updateAttribute(selectedBookIndex, newTitleInput)}
-              >
-                <Text style={styles.modalButtonText}>Update</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.modalButton}
-                onPress={() => closeModalAndClearInput()}
-              >
-                <Text style={styles.modalButtonText}>Cancel</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <>
-              <Text style={styles.modalTitle}>{`Update ${capitalize(updateOption)}:`}</Text>
-              <TextInput
-                style={styles.input}
-                value={newTitleInput}
-                onChangeText={(text) => setNewTitleInput(text)}
-              />
-              <TouchableOpacity
-                style={styles.modalButton}
-                onPress={() => updateAttribute(selectedBookIndex, newTitleInput)}
-              >
-                <Text style={styles.modalButtonText}>Update</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.modalButton}
-                onPress={() => closeModalAndClearInput()}
-              >
-                <Text style={styles.modalButtonText}>Cancel</Text>
-              </TouchableOpacity>
-            </>
-          )}
-        </View>
-        </View>
-      </Modal>
-
-     
-      <Modal
-        visible={isCustomModalVisible}
-        onRequestClose={() => setIsCustomModalVisible(false)}
-        transparent={true}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            {customOptions.map((option, optionIndex) => (
-              <TouchableOpacity
-                key={option.text}
-                style={styles.alertOption}
-                onPress={() => {
-                  option.onPress();
-                  setIsModalVisible(true); 
-                  setIsCustomModalVisible(false); 
-                }}
-              >
-                <Text>{option.text}</Text>
-              </TouchableOpacity>
-            ))}
-            <TouchableOpacity
-              style={styles.modalButton}
-              onPress={() => setIsCustomModalVisible(false)}
+        renderItem={({ item, index }) => {
+          return (
+            <TouchableHighlight
+              onPress={() => {
+                navigation.navigate('UpdateDetails', { bookID: item.id });
+              }}
+              underlayColor="#DDDDDD"
             >
-              <Text style={styles.modalButtonText}>Cancel</Text>
-            </TouchableOpacity>
+              <View style={styles.bookContainer}>
+                <Image style={styles.image} source={{ uri: item.image }} />
+                <View style={styles.bookInfo}>
+                  <Text style={styles.title}>{item.title}</Text>
+                  <Text style={styles.author}>Author: {item.author}</Text>
+                  <View style={styles.availableContainer}>
+                    {item.availability ? (
+                      <Text style={styles.available}>Available</Text>
+                    ) : (
+                      <Text style={styles.notAvailable}>Not Available</Text>
+                    )}
+                  </View>
+                </View>
+              </View>
+            </TouchableHighlight>
+
+          );
+        }}
+        renderHiddenItem={({ item, index }) => (
+          <View style={styles.rowBack}>
+
+            <TouchableOpacity
+              style={[styles.backRightBtn, styles.backRightBtnRight]}
+
+              onPress={() => removeBook(index)}
+            >
+              <Text style={styles.backTextWhite}>Remove</Text>
+            </TouchableOpacity >
           </View>
-        </View>
-      </Modal>
+        )}
+        leftOpenValue={75}
+        rightOpenValue={-75}
+      />
+
     </View>
   );
 };
 
 const styles = {
-  bookContainer:{
-    width: '48%',
+  container: {
+    flex: 1,
+  },
+  bookContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
-    elevation: 2,
-    margin: '1%',
-    padding: 15,
+    backgroundColor: 'white',
+    margin: 2,
+    padding: 10,
+    borderColor: 'black',
+    borderRadius: 2,
+    justifyContent: 'space-between',
   },
   image: {
-    height:150,
-    width:150,
-    aspectRatio: 1,
-    borderRadius:26
+    height: 225,
+    width: 155,
+    borderRadius: 6,
   },
-  infoContainer: {
+  bookInfo: {
+    flex: 1,
     padding: 16,
-    flexShrink:1,
+    flexShrink: 1,
   },
   title: {
     fontSize: 20,
-    textAlign: 'center',
+    textAlign: 'left',
     fontWeight: 'bold',
-    color:'black',
-    flexShrink:1,
+    color: 'black',
+    flexShrink: 1,
+    marginBottom: 10,
   },
   author: {
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 8,
-    color:'black'
+    color: 'black',
   },
-  availableContainer:{
-    marginTop: 15
+  availableContainer: {
+    marginTop: 15,
   },
   available: {
-    color:'green',
-    textAlign:'center',
+    color: 'green',
+    textAlign: 'left',
   },
   notAvailable: {
-    color:'red',
-    textAlign:'center',
-  },  
-  update:{
-    elevation: 8,
-    backgroundColor: '#279EFF',
-    borderRadius: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    marginTop:20,
+    color: 'red',
+    textAlign: 'left',
   },
-  updateButton:{
-    color: 'white',
+  rowBack: {
+    alignItems: 'center',
+
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingLeft: 15,
+    margin: 0,
   },
-  remove:{
-    elevation: 8,
-    backgroundColor: '#F6635C',
-    borderRadius: 10,
-    margin:5,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+  backRightBtn: {
+    alignItems: 'center',
+    bottom: 0,
+    justifyContent: 'center',
+    position: 'absolute',
+    top: 0,
+    width: 75,
+
   },
-  removeButton:{
-    color: 'white',
+  backRightBtnLeft: {
+    backgroundColor: 'blue',
+    right: 75,
+    margin: 2,
   },
+  backRightBtnRight: {
+    backgroundColor: 'red',
+    right: 0,
+    margin: 2,
+  },
+  backTextWhite: {
+    color: '#FFF',
+  },
+
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -377,12 +243,12 @@ const styles = {
   },
   alertOption: {
     fontSize: 16,
-    color: 'blue', // Change the color to your desired value
+    color: 'blue',
     paddingVertical: 8,
     paddingHorizontal: 16,
     textAlign: 'center',
   },
-  
+
 };
 
 export default AdminBook;

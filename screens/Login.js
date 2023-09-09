@@ -1,4 +1,4 @@
-import { View, Text, Image , Pressable, TextInput, TouchableOpacity, Linking  } from 'react-native'
+import { View, Text, Image, Pressable, TextInput, TouchableOpacity, Linking } from 'react-native'
 import React, { useState } from 'react'
 import { SafeAreaView } from "react-native-safe-area-context";
 import COLORS from '../constants/colors';
@@ -13,12 +13,12 @@ const openFacebook = () => {
     const fallbackURL = 'https://www.facebook.com/Bryanwee333'; // Replace PAGE_ID with your Facebook Page ID
     Linking.canOpenURL(facebookAppURL).then((supported) => {
         if (supported) {
-          Linking.openURL(facebookAppURL);
+            Linking.openURL(facebookAppURL);
         } else {
-          Linking.openURL(fallbackURL);
+            Linking.openURL(fallbackURL);
         }
-      });
-    };
+    });
+};
 
 const Login = ({ navigation }) => {
     const [isPasswordShown, setIsPasswordShown] = useState(false);
@@ -30,34 +30,37 @@ const Login = ({ navigation }) => {
         console.log('Logging in with email:', email, 'and password:', password);
         console.log('Login button pressed');
         signInUser(email, password)
-  .then((user) => {
-    // Successful login, navigate to the next screen or perform actions
-    console.log('User logged in:', user);
+            .then((user) => {
+                // Successful login, navigate to the next screen or perform actions
+                console.log('User logged in:', user);
 
-    // Use the navigation object to navigate based on userType
-    if (user.type === 'Client') {
-      // Navigate to the ClientPage
-      navigation.navigate('Client');
-    } else if (user.type === 'Admin') {
-      // Navigate to the AdminPage
-      navigation.navigate('Admin');
-    } else {
-      // Handle other user types or unexpected userType values
-      console.error('Invalid userType:', user.type);
-    }
-  })
-  .catch((error) => {
-    // Handle login error, display an error message to the user
-    console.error('Login failed:', error);
-    // You can also display an error message to the user here
-  });
+                // Use the navigation object to navigate based on userType
+                if (user.type === 'Client') {
+                    // Navigate to the ClientPage
+                    navigation.reset({
+                        index: 0, // Navigate to the first screen in the stack
+                        routes: [{ name: 'Client' }], // Navigate to the "Client" screen
+                    });
+                } else if (user.type === 'Admin') {
+                    // Navigate to the AdminPage
+                    navigation.navigate('Admin');
+                } else {
+                    // Handle other user types or unexpected userType values
+                    console.error('Invalid userType:', user.type);
+                }
+            })
+            .catch((error) => {
+                // Handle login error, display an error message to the user
+                console.error('Login failed:', error);
+                // You can also display an error message to the user here
+            });
 
-      
+
     };
-      
-    
 
-    
+
+
+
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.white }}>
             <View style={{ flex: 1, marginHorizontal: 22 }}>
@@ -70,7 +73,7 @@ const Login = ({ navigation }) => {
                     }}>
                         Hi Welcome to Book Buddy! 👋
                     </Text>
-                   
+
                     <Text style={{
                         fontSize: 16,
                         color: COLORS.black
