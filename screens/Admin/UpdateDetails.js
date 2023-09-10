@@ -436,9 +436,9 @@ const styles = StyleSheet.create({
     marginTop: '0',
   },
   image: {
-    height: 300,
-    width: '100%',
-    aspectRatio: 1,
+    height: 400,
+    width: 300,
+
   },
   infoContainer: {
     flex: 1,
@@ -449,9 +449,10 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: 'black',
+    marginBottom: 8,
   },
   author: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: '600',
     marginBottom: 8,
     color: 'grey',

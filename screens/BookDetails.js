@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Text, StyleSheet, View, Image, ScrollView, Alert, SafeAreaView, Button } from 'react-native';
+import { Text, StyleSheet, View, Image, ScrollView, Alert, SafeAreaView, TouchableOpacity } from 'react-native';
 import { getBook, borrowBook, checkBookAvailability, toggleBookFavoriteStatus, isBookInFavorites, updateAvailability } from '../services/BooksService';
 import DatePicker from 'react-native-date-picker'
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 export function BookDetails({ route, navigation }) {
   const { bookID } = route.params;
@@ -140,11 +141,62 @@ export function BookDetails({ route, navigation }) {
           <Text style={styles.author}>Author: {book.author}</Text>
           <Text style={styles.descriptionHeader}>Description:</Text>
           <Text style={styles.description}>{book.description}</Text>
-          <Button onPress={onAddToFav} color="#f7e00f" title={isFavorite ? 'Remove from Favorites' : 'Add to Favorites'} />
+          <TouchableOpacity
+            style={{
+              backgroundColor: '#FF0060',
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 5,
+              padding: 10,
+            }}
+            onPress={onAddToFav}
+          >
+            <Ionicons
+              name={isFavorite ? 'heart' : 'heart-outline'}
+              size={24}
+              color="white"
+            />
+            <Text
+              style={{
+                color: 'white',
+                fontSize: 18,
+                marginLeft: 10,
+              }}
+            >
+              {isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
+            </Text>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.infoContainer}>
-          <Button onPress={onBorrowBook} color="#f7e00f" title="Borrow Book" />
+          <TouchableOpacity
+            style={{
+              backgroundColor: '#f7e00f',
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 5,
+              padding: 10,
+            }}
+            onPress={onBorrowBook}
+
+          >
+            <Image
+              style={{ width: 30, height: 30, color: "white" }}
+              source={require('../icons/borrow.png')}
+            />
+
+            <Text
+              style={{
+                color: '#A73121',
+                fontSize: 18,
+                marginLeft: 10,
+              }}
+            >
+              Borrow Book
+            </Text>
+          </TouchableOpacity>
           <DatePicker
             modal
             mode='date'
@@ -175,12 +227,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'white',
-    marginTop: '5%',
+    marginTop: '5',
   },
   image: {
-    height: 300,
-    width: '100%',
-    aspectRatio: 1,
+    height: 350,
+    width: 250,
   },
   infoContainer: {
     padding: 16,
@@ -188,10 +239,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
+    marginBottom: 8,
     color: 'black',
   },
   author: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: '600',
     marginBottom: 8,
     color: 'grey',

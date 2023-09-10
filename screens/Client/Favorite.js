@@ -125,6 +125,7 @@ export function Favorite() {
 
       <View style={styles.select}>
         <Button
+          color="#1B9C85"
           title="Borrow Selected Books"
           onPress={handleBorrowBooks}
           disabled={selectedBooks.length === 0}
@@ -151,6 +152,10 @@ export function Favorite() {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 3,
+  },
   bookList: {
     backgroundColor: "#eeeeee",
   },
@@ -171,22 +176,13 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     color: 'black',
   },
-  description: {
-    fontSize: 18,
-    fontWeight: '400',
-    color: '#787878',
-    marginBottom: 16,
-    color: 'black',
-  },
   borrow: {
     marginTop: '5%',
   },
   select: {
-    position: 'absolute',
+    position: 'relative',
     bottom: 0,
-    left: 20,
-    right: 20,
-    padding: 0,
+    padding: 5,
   },
 
   notification: {

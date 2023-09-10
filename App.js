@@ -29,9 +29,9 @@ class CustomDrawerComponent extends Component<Props> {
 
   render() {
     return (
-      <View style={{ flex: 1 }}>
-        <DrawerContentScrollView>
-          <View style={{ alignItems: 'center', backgroundColor: 'goldenrod' }}>
+      <View style={{ flex: 1, backgroundColor: '#FF8551', paddingTop: 40 }}>
+        <DrawerContentScrollView {...this.props}>
+          <View style={{ alignItems: 'center' }}>
             <Image
               style={{
                 width: 80,
@@ -39,16 +39,18 @@ class CustomDrawerComponent extends Component<Props> {
               }}
               source={require('./assets/logo.jpg')}
             />
-            <Text>My Book Buddy</Text>
+            <Text style={{ color: 'white', fontSize: 20, marginTop: 10 }}>My Book Buddy</Text>
           </View>
 
-          <View style={{ backgroundColor: '#fff', flex: 1, paddingTop: 10 }}>
-            <DrawerItemList {...this.props} />
+          <View style={{ backgroundColor: '#FF8551', flex: 1, paddingTop: 10 }}>
+            <DrawerItemList
+              {...this.props}
+            />
           </View>
         </DrawerContentScrollView>
 
         <DrawerContentScrollView>
-          <View style={{ borderTopWidth: 1, borderTopColor: 'grey' }} />
+          <View style={{ borderTopWidth: 1, borderTopColor: 'white' }} />
           <TouchableOpacity style={{ paddingVertical: 10 }}>
             <View
               style={{
@@ -57,12 +59,12 @@ class CustomDrawerComponent extends Component<Props> {
                 marginLeft: 20,
               }}
             >
-              <Ionicons name="exit-outline" size={23} />
+              <Ionicons name="exit-outline" size={23} color="white" />
               <Text
                 style={{
                   marginLeft: 20,
                   fontSize: 23,
-
+                  color: 'white',
                 }}
                 onPress={() => {
                   this.props.navigation.navigate('Login');
@@ -107,16 +109,26 @@ export default class App extends Component {
 const ClientDrawerNavigator = () => (
   <Drawer.Navigator initialRouteName="MenuTab"
     drawerContent={(props) => <CustomDrawerComponent {...props} />}
+    drawerStyle={{
+      backgroundColor: '#FF8551',
+    }}
+    screenOptions={{
+      headerStyle: {
+        backgroundColor: '#FF8551',
+      },
+      headerTintColor: 'white',
+    }}
   >
     <Drawer.Screen
       name="Home"
       component={HomeTabNavigator}
       options={{
-        drawerIcon: ({ color }) => (
-          <Ionicons name="planet" size={20} color={color} />
+        drawerIcon: () => (
+          <Ionicons name="planet" size={20} color='white' />
         ),
         drawerLabelStyle: {
           fontSize: 23,
+          color: "white"
         },
       }}
     />
@@ -124,11 +136,12 @@ const ClientDrawerNavigator = () => (
       name="BookList"
       component={BookListTabNavigator}
       options={{
-        drawerIcon: ({ color }) => (
-          <Ionicons name="book" size={20} color={color} />
+        drawerIcon: () => (
+          <Ionicons name="book" size={20} color={'white'} />
         ),
         drawerLabelStyle: {
           fontSize: 23,
+          color: "white"
         },
       }}
     />
@@ -136,11 +149,12 @@ const ClientDrawerNavigator = () => (
       name="Favorite"
       component={FavoriteTabNavigator}
       options={{
-        drawerIcon: ({ color }) => (
-          <Ionicons name="heart" size={20} color={color} />
+        drawerIcon: () => (
+          <Ionicons name="heart" size={20} color={'white'} />
         ),
         drawerLabelStyle: {
           fontSize: 23,
+          color: "white"
         },
       }}
     />
@@ -248,16 +262,26 @@ const FavoriteTabNavigator = () => (
 const AdminDrawerNavigator = () => (
   <Drawer.Navigator
     drawerContent={(props) => <CustomDrawerComponent {...props} />}
+    drawerStyle={{
+      backgroundColor: '#FF8551',
+    }}
+    screenOptions={{
+      headerStyle: {
+        backgroundColor: '#FF8551',
+      },
+      headerTintColor: 'white',
+    }}
   >
     <Drawer.Screen
       name="Add Book"
       component={AddBookTabNavigator}
       options={{
-        drawerIcon: ({ color }) => (
-          <Ionicons name="add-circle" size={20} color={color} />
+        drawerIcon: () => (
+          <Ionicons name="add-circle" size={20} color={'white'} />
         ),
         drawerLabelStyle: {
           fontSize: 23,
+          color: 'white'
         },
       }}
     />
@@ -265,11 +289,12 @@ const AdminDrawerNavigator = () => (
       name="Edit Book"
       component={EditBookTabNavigator}
       options={{
-        drawerIcon: ({ color }) => (
-          <Ionicons name="create" size={20} color={color} />
+        drawerIcon: () => (
+          <Ionicons name="create" size={20} color={'white'} />
         ),
         drawerLabelStyle: {
           fontSize: 23,
+          color: 'white'
         },
       }}
     />
@@ -277,11 +302,12 @@ const AdminDrawerNavigator = () => (
       name="Check Borrowed"
       component={CheckBorrowedTabNavigator}
       options={{
-        drawerIcon: ({ color }) => (
-          <Ionicons name="file-tray" size={20} color={color} />
+        drawerIcon: () => (
+          <Ionicons name="file-tray" size={20} color={'white'} />
         ),
         drawerLabelStyle: {
           fontSize: 23,
+          color: 'white'
         },
       }}
     />

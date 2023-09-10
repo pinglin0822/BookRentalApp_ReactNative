@@ -111,7 +111,7 @@ export function BorrowedList({ image, navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    padding: 0,
   },
   title: {
     fontSize: 24,
