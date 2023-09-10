@@ -306,8 +306,8 @@ const AdminDrawerNavigator = () => (
           <Ionicons name="file-tray" size={20} color={'white'} />
         ),
         drawerLabelStyle: {
-          fontSize: 23,
-          color: 'white'
+          fontSize: 19,
+          color: 'white',
         },
       }}
     />

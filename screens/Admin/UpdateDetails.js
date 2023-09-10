@@ -297,7 +297,7 @@ export function UpdateDetails({ route, navigation }) {
             />
           )}
           <View style={styles.modalContainer}>
-            <Text style={{ fontWeight: 'bold', fontSize: 20, color: 'white', margin: 10 }}>Update Title</Text>
+            <Text style={{ fontWeight: 'bold', fontSize: 20, color: 'white', margin: 10 }}>Update Image</Text>
 
             <View style={{ margin: 10 }}>
               <Button title="Upload Image" onPress={openImagePicker} />
