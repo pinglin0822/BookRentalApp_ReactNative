@@ -30,7 +30,7 @@ const Login = ({ navigation }) => {
     const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
 
-    // Save data to AsyncStorage
+
   // Save data to AsyncStorage
 const saveData = async () => {
   try {
@@ -42,9 +42,6 @@ const saveData = async () => {
     console.error('Error saving data:', e);
   }
 };
-
-
-  // Retrieve data from AsyncStorage
   // Retrieve data from AsyncStorage and fill the fields if "Remember Me" is checked
 const retrieveData = async () => {
   try {
