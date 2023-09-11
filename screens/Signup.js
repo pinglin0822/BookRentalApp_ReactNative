@@ -9,12 +9,16 @@ import { insertUser,createTable  } from "../services/BooksService";
 
 
 const Signup = ({ navigation }) => {
-const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [type, setUserType] = useState('Client'); // Default userType is 'Client'
-  const [isPasswordShown, setIsPasswordShown] = useState(true);
-  const [isChecked, setIsChecked] = useState(false);
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [type, setUserType] = useState('Client'); // Default userType is 'Client'
+    const [isPasswordShown, setIsPasswordShown] = useState(true);
+    const [isChecked, setIsChecked] = useState(false);
+    const [emailError, setEmailError] = useState('');
+    const [passwordError, setPasswordError] = useState('');
+    const MAX_USERNAME_LENGTH = 20; // Maximum length for the username
+    const [usernameError, setUsernameError] = useState(''); // New state for username error
 
   const handleSignUp =  async () => {
     console.log('Handling sign up...');
@@ -25,20 +29,67 @@ const [name, setName] = useState('');
         console.error('Please fill in all fields.');
         return;
       }
-      
-      console.log('Before insertUser...');
-      const userId = await insertUser(name, email, password, type);
-      if (userId) {
-        console.log('User ID from insertUser:', userId);
-      navigation.navigate('Login');
-      }
-    } catch (error) {
-      console.error('Error registering user:', error);
-      if (error instanceof Error && error.message) {
-        console.error('Error message:', error.message);
-      }
+  // Validate email and password
+  validateEmail();
+  validatePassword();
+
+  if (emailError || passwordError || usernameError) {
+    console.error('Invalid email or password, or username.');
+    return;
+  }
+
+  // Add additional validation for the username length
+  if (name.length > MAX_USERNAME_LENGTH) {
+    console.error('Username exceeds the maximum length.');
+    return;
+  }
+
+  const userId = await insertUser(name, email, password, type);
+  if (userId) {
+    console.log('User ID from insertUser:', userId);
+    navigation.navigate('Login');
+  }
+} catch (error) {
+  console.error('Error registering user:', error);
+  if (error instanceof Error && error.message) {
+    console.error('Error message:', error.message);
+  }
+}
+};
+
+const validateEmail = () => {
+const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+if (!email) {
+  setEmailError('Email is required');
+} else if (!emailPattern.test(email)) {
+  setEmailError('Invalid email format');
+} else {
+  setEmailError('');
+}
+};
+
+const validatePassword = () => {
+if (!password) {
+  setPasswordError('Password is required');
+} else if (password.length < 6) {
+  setPasswordError('Password must be at least 6 characters long');
+} else if (password.length > 20) {
+  setPasswordError('Password cannot exceed 20 characters');
+} else {
+  setPasswordError('');
+}
+};
+
+const validateUsername = () => {
+    if (!name) {
+      setUsernameError('Username is required');
+    } else if (name.length > MAX_USERNAME_LENGTH) {
+      setUsernameError('Username exceeds the maximum length.');
+    } else {
+      setUsernameError(''); // Clear the error if it's within the limit
     }
   };
+  
   
 
   // Function to toggle between 'Admin' and 'Client' userType
@@ -108,8 +159,12 @@ const [name, setName] = useState('');
               style={{
                 width: "100%"
               }}
+              onBlur={validateUsername} // Add onBlur validation for the username
             />
           </View>
+          {usernameError ? (
+            <Text style={{ color: 'red' }}>{usernameError}</Text>
+          ) : null}
         </View>
                 <View style={{ marginBottom: 12 }}>
                     <Text style={{
@@ -137,8 +192,10 @@ const [name, setName] = useState('');
                             style={{
                                 width: "100%"
                             }}
+                            onBlur={validateEmail}
                         />
                     </View>
+                    {emailError ? <Text style={{ color: 'red' }}>{emailError}</Text> : null}
                 </View>
 
                 <View style={{ marginBottom: 12 }}>
@@ -208,6 +265,7 @@ const [name, setName] = useState('');
                             style={{
                                 width: "100%"
                             }}
+                            onBlur={validatePassword}
                         />
 
                         <TouchableOpacity
@@ -227,6 +285,7 @@ const [name, setName] = useState('');
 
                         </TouchableOpacity>
                     </View>
+                    {passwordError ? <Text style={{ color: 'red' }}>{passwordError}</Text> : null}
                 </View>
 
                 <View style={{

@@ -25,46 +25,77 @@ const Login = ({ navigation }) => {
     const [isChecked, setIsChecked] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [emailError, setEmailError] = useState('');
+    const [passwordError, setPasswordError] = useState('');
 
-    const handleLogin = () => {
-        console.log('Logging in with email:', email, 'and password:', password);
-        console.log('Login button pressed');
-        signInUser(email, password)
-            .then((user) => {
-                // Successful login, navigate to the next screen or perform actions
-                console.log('User logged in:', user);
+    const validateEmail = () => {
+        const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+        if (!email) {
+          setEmailError('Email is required');
+        } else if (!emailPattern.test(email)) {
+          setEmailError('Invalid email format');
+        } else {
+          setEmailError('');
+        }
+      };
+    
+      const validatePassword = () => {
+        if (!password) {
+          setPasswordError('Password is required');
+        } else if (password.length < 6) {
+          setPasswordError('Password must be at least 6 characters long');
+        } else if (password.length > 20) {
+          setPasswordError('Password cannot exceed 20 characters');
+        } else {
+          setPasswordError('');
+        }
+      };
 
-                // Use the navigation object to navigate based on userType
-                if (user.type === 'Client') {
-                    // Navigate to the ClientPage
-                    navigation.reset({
-                        index: 0, // Navigate to the first screen in the stack
-                        routes: [{ name: 'Client' }], // Navigate to the "Client" screen
-                    });
-                } else if (user.type === 'Admin') {
-                    // Navigate to the AdminPage
-                    navigation.navigate('Admin');
-                } else {
-                    // Handle other user types or unexpected userType values
-                    console.error('Invalid userType:', user.type);
-                }
-            })
-            .catch((error) => {
-                // Handle login error, display an error message to the user
-                console.error('Login failed:', error);
-                // You can also display an error message to the user here
+
+const handleLogin = () => {
+    // Validate email and password before proceeding
+    validateEmail();
+    validatePassword();
+
+    if (!emailError && !passwordError) {
+      console.log('Logging in with email:', email, 'and password:', password);
+      console.log('Login button pressed');
+      const rememberMe = isChecked;
+      signInUser(email, password)
+        .then((user) => {
+          // Successful login, navigate to the next screen or perform actions
+          console.log('User logged in:', user);
+
+          // Use the navigation object to navigate based on userType
+          if (user.type === 'Client') {
+            // Navigate to the ClientPage
+            navigation.reset({
+              index: 0, // Navigate to the first screen in the stack
+              routes: [{ name: 'Client' }], // Navigate to the "Client" screen
             });
+          } else if (user.type === 'Admin') {
+            // Navigate to the AdminPage
+            navigation.navigate('Admin');
+          } else {
+            // Handle other user types or unexpected userType values
+            console.error('Invalid userType:', user.type);
+          }
+        })
+        .catch((error) => {
+          // Handle login error, display an error message to the user
+          console.error('Login failed:', error);
+          // You can also display an error message to the user here
+        });
+    }
+  };
 
 
-    };
 
 
-
-
-    return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.white }}>
-            <View style={{ flex: 1, marginHorizontal: 22 }}>
-                <View style={{ marginVertical: 22 }}>
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.white }}>
+      <View style={{ flex: 1, marginHorizontal: 22 }}>
+      <View style={{ marginVertical: 22 }}>
                     <Text style={{
                         fontSize: 22,
                         fontWeight: 'bold',
@@ -79,83 +110,71 @@ const Login = ({ navigation }) => {
                         color: COLORS.black
                     }}>U need an account before using our app.</Text>
                 </View>
-
-                <View style={{ marginBottom: 12 }}>
-                    <Text style={{
-                        fontSize: 16,
-                        fontWeight: 400,
-                        marginVertical: 8
-                    }}>Email address</Text>
-
-                    <View style={{
-                        width: "100%",
-                        height: 48,
-                        borderColor: COLORS.black,
-                        borderWidth: 1,
-                        borderRadius: 8,
-                        alignItems: "center",
-                        justifyContent: "center",
-                        paddingLeft: 22
-                    }}>
-                        <TextInput
-                            placeholder='Enter your email address'
-                            placeholderTextColor={COLORS.black}
-                            keyboardType='email-address'
-                            style={{
-                                width: "100%"
-                            }}
-                            value={email}
-                            onChangeText={(text) => setEmail(text)}
-                        />
-                    </View>
-                </View>
-
-                <View style={{ marginBottom: 12 }}>
-                    <Text style={{
-                        fontSize: 16,
-                        fontWeight: 400,
-                        marginVertical: 8
-                    }}>Password</Text>
-
-                    <View style={{
-                        width: "100%",
-                        height: 48,
-                        borderColor: COLORS.black,
-                        borderWidth: 1,
-                        borderRadius: 8,
-                        alignItems: "center",
-                        justifyContent: "center",
-                        paddingLeft: 22
-                    }}>
-                        <TextInput
-                            placeholder='Enter your password'
-                            placeholderTextColor={COLORS.black}
-                            secureTextEntry={isPasswordShown}
-                            style={{
-                                width: "100%"
-                            }}
-                            value={password}
-                            onChangeText={(text) => setPassword(text)}
-                        />
-
-                        <TouchableOpacity
-                            onPress={() => setIsPasswordShown(!isPasswordShown)}
-                            style={{
-                                position: "absolute",
-                                right: 12
-                            }}
-                        >
-                            {
-                                isPasswordShown == true ? (
-                                    <Ionicons name="eye-off" size={24} color={COLORS.black} />
-                                ) : (
-                                    <Ionicons name="eye" size={24} color={COLORS.black} />
-                                )
-                            }
-
-                        </TouchableOpacity>
-                    </View>
-                </View>
+        <View style={{ marginBottom: 12 }}>
+          <Text style={{ fontSize: 16, fontWeight: 400, marginVertical: 8 }}>Email address</Text>
+          <View
+            style={{
+              width: '100%',
+              height: 48,
+              borderColor: COLORS.black,
+              borderWidth: 1,
+              borderRadius: 8,
+              alignItems: 'center',
+              justifyContent: 'center',
+              paddingLeft: 22,
+            }}
+          >
+            <TextInput
+              placeholder="Enter your email address"
+              placeholderTextColor={COLORS.black}
+              keyboardType="email-address"
+              style={{ width: '100%' }}
+              value={email}
+              onChangeText={(text) => setEmail(text)}
+              onBlur={validateEmail} // Validate email on blur
+            />
+          </View>
+          {emailError ? <Text style={{ color: 'red' }}>{emailError}</Text> : null}
+        </View>
+        <View style={{ marginBottom: 12 }}>
+          <Text style={{ fontSize: 16, fontWeight: 400, marginVertical: 8 }}>Password</Text>
+          <View
+            style={{
+              width: '100%',
+              height: 48,
+              borderColor: COLORS.black,
+              borderWidth: 1,
+              borderRadius: 8,
+              alignItems: 'center',
+              justifyContent: 'center',
+              paddingLeft: 22,
+            }}
+          >
+            <TextInput
+              placeholder="Enter your password"
+              placeholderTextColor={COLORS.black}
+              secureTextEntry={!isPasswordShown}
+              style={{ width: '100%' }}
+              value={password}
+              onChangeText={(text) => setPassword(text)}
+              onBlur={validatePassword} // Validate password on blur
+            />
+            <TouchableOpacity
+              onPress={() => setIsPasswordShown(!isPasswordShown)}
+              style={{
+                position: 'absolute',
+                right: 12,
+              }}
+            >
+              {isPasswordShown == true ? (
+                <Ionicons name="eye-off" size={24} color={COLORS.black} />
+              ) : (
+                <Ionicons name="eye" size={24} color={COLORS.black} />
+              )}
+            </TouchableOpacity>
+          </View>
+          {passwordError ? <Text style={{ color: 'red' }}>{passwordError}</Text> : null}
+        </View>
 
                 <View style={{
                     flexDirection: 'row',
@@ -164,11 +183,11 @@ const Login = ({ navigation }) => {
                     <Checkbox
                         style={{ marginRight: 8 }}
                         value={isChecked}
-                        onValueChange={setIsChecked}
+                        onValueChange={(value) => setIsChecked(value)}
                         color={isChecked ? COLORS.primary : undefined}
                     />
 
-                    <Text>Remenber Me</Text>
+                    <Text>Remember Me</Text>
                 </View>
 
                 <Button
