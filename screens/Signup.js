@@ -29,6 +29,10 @@ const Signup = ({ navigation }) => {
         console.error('Please fill in all fields.');
         return;
       }
+      if (!isChecked) {
+        console.error('Please agree to the terms and conditions.');
+        return;
+      }
   // Validate email and password
   validateEmail();
   validatePassword();
@@ -301,11 +305,16 @@ const validateUsername = () => {
 
                     <Text>I agree to the terms and conditions</Text>
                 </View>
-
+                {!isChecked && (
+                    <Text style={{ color: 'red', marginTop: 8 }}>
+                    Please agree to the terms and conditions.
+                </Text>
+                )}
                 <Button
                     title="Sign Up"
                     filled
                     onPress={handleSignUp}
+                    disabled={!isChecked}
                     style={{
                         marginTop: 18,
                         marginBottom: 4,
