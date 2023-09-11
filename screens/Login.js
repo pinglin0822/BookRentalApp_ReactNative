@@ -6,7 +6,8 @@ import { Ionicons } from "@expo/vector-icons";
 import Checkbox from "expo-checkbox"
 import Button from '../components/Button';
 import { signInUser } from "../services/BooksService";
-import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useEffect } from 'react';
 
 const openFacebook = () => {
     const facebookAppURL = 'https://www.facebook.com/'; // Replace PAGE_ID with your Facebook Page ID
@@ -27,6 +28,42 @@ const Login = ({ navigation }) => {
     const [password, setPassword] = useState('');
     const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
+
+
+  // Save data to AsyncStorage
+const saveData = async () => {
+  try {
+    await AsyncStorage.setItem('email', email);
+    await AsyncStorage.setItem('password', password);
+    await AsyncStorage.setItem('rememberMeChecked', isChecked.toString()); // Save the checkbox state
+  } catch (e) {
+    // Saving error
+    console.error('Error saving data:', e);
+  }
+};
+  // Retrieve data from AsyncStorage and fill the fields if "Remember Me" is checked
+const retrieveData = async () => {
+  try {
+    const savedEmail = await AsyncStorage.getItem('email');
+    const savedPassword = await AsyncStorage.getItem('password');
+    const rememberMeChecked = await AsyncStorage.getItem('rememberMeChecked');
+
+    if (savedEmail !== null && savedPassword !== null && rememberMeChecked === 'true') {
+      // Data was found and "Remember Me" is checked, set it to the state
+      setEmail(savedEmail);
+      setPassword(savedPassword);
+      setIsChecked(true); // Set the "Remember Me" checkbox to checked
+    }
+  } catch (e) {
+    // Retrieval error
+    console.error('Error retrieving data:', e);
+  }
+};
+
+
+  useEffect(() => {
+    retrieveData(); // Load saved data when the component mounts
+  }, []);
 
     const validateEmail = () => {
         const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
@@ -52,42 +89,48 @@ const Login = ({ navigation }) => {
       };
 
 
-const handleLogin = () => {
-    // Validate email and password before proceeding
-    validateEmail();
-    validatePassword();
-
-    if (!emailError && !passwordError) {
-      console.log('Logging in with email:', email, 'and password:', password);
-      console.log('Login button pressed');
-      const rememberMe = isChecked;
-      signInUser(email, password)
-        .then((user) => {
-          // Successful login, navigate to the next screen or perform actions
-          console.log('User logged in:', user);
-
-          // Use the navigation object to navigate based on userType
-          if (user.type === 'Client') {
-            // Navigate to the ClientPage
-            navigation.reset({
-              index: 0, // Navigate to the first screen in the stack
-              routes: [{ name: 'Client' }], // Navigate to the "Client" screen
+      const handleLogin = () => {
+        // Validate email and password before proceeding
+        validateEmail();
+        validatePassword();
+      
+        if (!emailError && !passwordError) {
+          console.log('Logging in with email:', email, 'and password:', password);
+          console.log('Login button pressed');
+          const rememberMe = isChecked;
+          signInUser(email, password)
+            .then((user) => {
+              // Successful login, navigate to the next screen or perform actions
+              console.log('User logged in:', user);
+      
+              // Use the navigation object to navigate based on userType
+              if (user.type === 'Client') {
+                // Navigate to the ClientPage
+                navigation.reset({
+                  index: 0, // Navigate to the first screen in the stack
+                  routes: [{ name: 'Client' }], // Navigate to the "Client" screen
+                });
+              } else if (user.type === 'Admin') {
+                // Navigate to the AdminPage
+                navigation.navigate('Admin');
+              } else {
+                // Handle other user types or unexpected userType values
+                console.error('Invalid userType:', user.type);
+              }
+      
+              // Save data if "Remember Me" is checked
+              if (rememberMe) {
+                saveData();
+              }
+            })
+            .catch((error) => {
+              // Handle login error, display an error message to the user
+              console.error('Login failed:', error);
+              // You can also display an error message to the user here
             });
-          } else if (user.type === 'Admin') {
-            // Navigate to the AdminPage
-            navigation.navigate('Admin');
-          } else {
-            // Handle other user types or unexpected userType values
-            console.error('Invalid userType:', user.type);
-          }
-        })
-        .catch((error) => {
-          // Handle login error, display an error message to the user
-          console.error('Login failed:', error);
-          // You can also display an error message to the user here
-        });
-    }
-  };
+        }
+      };
+      
 
 
 
