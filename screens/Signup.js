@@ -47,7 +47,7 @@ const Signup = ({ navigation }) => {
     console.error('Username exceeds the maximum length.');
     return;
   }
-
+  console.log(name+email+password+type);
   const userId = await insertUser(name, email, password, type);
   if (userId) {
     console.log('User ID from insertUser:', userId);

@@ -22,6 +22,7 @@ export function BookDetails({ route, navigation }) {
 
         // Check if the book is in favorites and update the state accordingly
         const isInFavorites = await isBookInFavorites(bookID);
+        console.log(isInFavorites)
         setIsFavorite(isInFavorites);
 
       } catch (error) {
@@ -98,7 +99,7 @@ export function BookDetails({ route, navigation }) {
         const formattedReturnDate = returnDate.toLocaleDateString();
 
         await updateAvailability(bookID, false);
-        await borrowBook(bookID, formattedSelectedDate, formattedSelectedDate);
+        await borrowBook(bookID, formattedSelectedDate, formattedReturnDate);
 
         setNotification({ message: 'Book Borrowed Successfully', isVisible: true });
         setOpen(false);

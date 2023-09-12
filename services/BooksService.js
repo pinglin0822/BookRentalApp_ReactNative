@@ -1,434 +1,222 @@
 import SQLite from 'react-native-sqlite-storage';
+import { SERVER_URL } from '../config.js';
 
 const db = SQLite.openDatabase({ name: 'mydb.db', location: 'default' });
 
-const createTable = () => {
-  db.transaction((tx) => {
-    tx.executeSql(
-      'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT, password TEXT, type TEXT)',
-      [],
-      () => {
-        console.log('Table created successfully');
-      },
-      (error) => {
-        console.log('Error creating categories table:', error);
-      }
-    );
-    tx.executeSql(
-      'CREATE TABLE IF NOT EXISTS books (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, image TEXT, availability INTEGER, description TEXT, author TEXT)',
-      [],
-      () => {
-        console.log('Table created successfully');
-      },
-      (error) => {
-        console.log('Error creating table:', error);
-      }
-    );
-
-    tx.executeSql(
-      'CREATE TABLE IF NOT EXISTS borrowedBook (id INTEGER PRIMARY KEY AUTOINCREMENT, bookId INTEGER, borrowDate TEXT, returnDate TEXT)',
-      [],
-      () => {
-        console.log('Table created successfully');
-      },
-      (error) => {
-        console.log('Error creating categories table:', error);
-      }
-    );
-    tx.executeSql(
-      'CREATE TABLE IF NOT EXISTS favourite (id INTEGER PRIMARY KEY AUTOINCREMENT, userId INTEGER, bookId INTEGER)',
-      [],
-      () => {
-        console.log('Table created successfully');
-      },
-      (error) => {
-        console.log('Error creating categories table:', error);
-      }
-    );
-  });
-};
+const createTable = () => {console.log('...');};
 
 export { createTable };
 
 export function signInUser(email, password) {
   return new Promise((resolve, reject) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        'SELECT * FROM users WHERE email = ? AND password = ?',
-        [email, password],
-        (_, result) => {
-          if (result.rows.length === 1) {
-            const user = result.rows.item(0);
-            resolve(user); // Resolve with the user object, including userType
-          } else {
-            reject(new Error('Invalid email or password.'));
-          }
-        },
-        (_, error) => {
-          reject(new Error(`Error fetching user: ${error.message}`));
+    fetch(SERVER_URL+'/api/signin', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
+    })
+      .then((response) => {
+        if (response.status === 200) {
+          return response.json();
+        } else if (response.status === 401) {
+          throw new Error('Invalid email or password.');
+        } else {
+          throw new Error('Error signing in.');
         }
-      );
-    });
+      })
+      .then((user) => {
+        resolve(user); // Resolve with the user object, including userType
+      })
+      .catch((error) => {
+        reject(error);
+      });
   });
 }
-
-
 
 export function insertUser(name, email, password, type) {
-  return new Promise((resolve, reject) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        'INSERT INTO users (name, email, password, type) VALUES (?, ?, ?, ?)',
-        [name, email, password, type],
-        (_, result) => {
-          resolve(result.insertId);
-        },
-        (_, error) => {
-          console.error('Error during user insertion:', error.message); // Log the SQLite error message
-          reject(error);
-        }
-      );
-    });
+  const newUser = {
+    name, email, password, type
+  };
+  return fetch(SERVER_URL+'/api/users', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(newUser),
   });
 }
 
 
 
-
-
-
-
-export function insertBook(book) {
-  return new Promise((resolve, reject) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        'INSERT INTO books (title, image, availability, description, author) VALUES (?, ?, ?, ?, ?)',
-        [book.title, book.image, book.availability ? 1 : 0, book.description, book.author],
-        (_, result) => {
-          resolve(result.insertId);
-        },
-        (_, error) => {
-          reject(error);
-        }
-      );
-    });
+export function insertBook(newBook) {
+  return fetch(SERVER_URL+'/api/books', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(newBook),
   });
 }
 
 export function getBookList() {
-  return new Promise((resolve, reject) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        'SELECT * FROM books',
-        [],
-        (_, result) => {
-          const books = [];
-          for (let i = 0; i < result.rows.length; i++) {
-            books.push(result.rows.item(i));
-          }
-          resolve(books);
-        },
-        (_, error) => {
-          reject(error);
-        }
-      );
-    });
-  });
+  return fetch(SERVER_URL+"/api/books")
+  .then((response) => response.json())
 }
 
 export function getBook(id) {
-  return new Promise((resolve, reject) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        'SELECT * FROM books WHERE id = ?',
-        [id],
-        (_, result) => {
-          if (result.rows.length > 0) {
-            resolve(result.rows.item(0));
-          } else {
-            reject(new Error('Book not found'));
-          }
-        },
-        (_, error) => {
-          reject(error);
-        }
-      );
-    });
-  });
+  return fetch(SERVER_URL+"/api/books/"+id)
+  .then((response) => response.json())
 }
 
 export function toggleBookFavoriteStatus(bookId) {
   return new Promise((resolve, reject) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        'SELECT * FROM favourite WHERE bookId = ?',
-        [bookId],
-        (_, result) => {
-          if (result.rows.length > 0) {
-            // Book is already in favorites, so remove it
-            tx.executeSql(
-              'DELETE FROM favourite WHERE bookId = ?',
-              [bookId],
-              (_, deleteResult) => {
-                resolve({ action: 'remove', result: deleteResult });
-              },
-              (_, error) => {
-                reject(error);
-              }
-            );
-          } else {
-            // Book is not in favorites, so add it
-            tx.executeSql(
-              'INSERT INTO favourite (bookId) VALUES (?)',
-              [bookId],
-              (_, insertResult) => {
-                resolve({ action: 'add', result: insertResult });
-              },
-              (_, error) => {
-                reject(error);
-              }
-            );
-          }
-        },
-        (_, error) => {
-          reject(error);
+    fetch(SERVER_URL+`/api/books/favorite/${bookId}`, {
+      method: 'POST',
+    })
+      .then((response) => {
+        if (response.status === 200) {
+          return response.json();
+        } else {
+          throw new Error('Error toggling favorite status.');
         }
-      );
-    });
+      })
+      .then((data) => {
+        resolve(data); // Resolve with the action and result
+      })
+      .catch((error) => {
+        reject(error);
+      });
   });
 }
-
 
 export function isBookInFavorites(bookId) {
-  return new Promise((resolve, reject) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        'SELECT * FROM favourite WHERE bookId = ?',
-        [bookId],
-        (_, result) => {
-          resolve(result.rows.length > 0);
-        },
-        (_, error) => {
-          reject(error);
-        }
-      );
-    });
+  return fetch(SERVER_URL + '/api/isBookInFavorites/' + bookId, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+  .then((response) => response.json())
+  .then((data) => {
+    return data.isInFavorites;
   });
 }
+
 
 
 export function getFavoriteBooks() {
-  return new Promise((resolve, reject) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        'SELECT books.* FROM books INNER JOIN favourite ON books.id = favourite.bookId',
-        [],
-        (_, result) => {
-          const favoriteBooks = [];
-          for (let i = 0; i < result.rows.length; i++) {
-            favoriteBooks.push(result.rows.item(i));
-          }
-          resolve(favoriteBooks);
-        },
-        (_, error) => {
-          reject(error);
-        }
-      );
-    });
-  });
+  return fetch(SERVER_URL+"/api/favoriteBooks")
+  .then((response) => response.json())
 }
 
 export function borrowBook(bookId, borrowDate, returnDate) {
-  return new Promise((resolve, reject) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        'INSERT INTO borrowedBook (bookId, borrowDate, returnDate) VALUES (?, ?, ?)',
-        [bookId, borrowDate, returnDate],
-        (_, result) => {
-          resolve(result.insertId);
-        },
-        (_, error) => {
-          reject(error);
-        }
-      );
-    });
+  const newBook = {
+    bookId, borrowDate, returnDate
+  };
+  console.log(borrowDate+','+returnDate)
+  return fetch(SERVER_URL+'/api/borrowBook', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(newBook),
   });
 }
 
 export function checkBookAvailability(bookId) {
-  return new Promise((resolve, reject) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        'SELECT availability FROM books WHERE id = ?',
-        [bookId],
-        (_, result) => {
-          if (result.rows.length > 0) {
-            const availability = result.rows.item(0).availability;
-            resolve(availability === 1); // 1 represents available, 0 represents not available
-          } else {
-            reject(new Error('Book not found'));
-          }
-        },
-        (_, error) => {
-          reject(error);
-        }
-      );
-    });
+  return fetch(SERVER_URL+"/api/bookAvailability/"+bookId)
+  .then((response) => response.json())
+  .then((data) => {
+    return data.availability;
   });
 }
 
 export function getBorrowedBooks() {
-  return new Promise((resolve, reject) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        'SELECT borrowedBook.*, books.title, books.image, books.author FROM borrowedBook INNER JOIN books ON borrowedBook.bookId = books.id',
-        [],
-        (_, result) => {
-          const borrowedBooks = [];
-          for (let i = 0; i < result.rows.length; i++) {
-            borrowedBooks.push(result.rows.item(i));
-          }
-          resolve(borrowedBooks);
-        },
-        (_, error) => {
-          reject(error);
-        }
-      );
-    });
-  });
+  return fetch(SERVER_URL+"/api/borrowedBooks")
+  .then((response) => response.json())
 }
 
 export function deleteBook(bookId) {
-  return new Promise((resolve, reject) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        'DELETE FROM books WHERE id = ?',
-        [bookId],
-        (_, result) => {
-          resolve(result.rowsAffected);
-        },
-        (_, error) => {
-          reject(error);
-        }
-      );
-    });
+  return fetch(SERVER_URL+`/api/books/`+bookId, {
+    method: 'DELETE',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ id: bookId }),
   });
 }
 
-export function removeFavouriteBook(bookId) {
-  return new Promise((resolve, reject) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        'DELETE FROM favourite WHERE id = ?',
-        [bookId],
-        (_, result) => {
-          resolve(result.rowsAffected);
-        },
-        (_, error) => {
-          reject(error);
-        }
-      );
-    });
+export function removeFavouriteBook(favid) {
+  return fetch(SERVER_URL+`/api/favourite/`+favid, {
+    method: 'DELETE',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ id: favid }),
   });
 }
 
 export function updateTitle(bookId, newTitle) {
-  return new Promise((resolve, reject) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        'UPDATE books SET title = ? WHERE id = ?',
-        [newTitle, bookId],
-        (_, result) => {
-          resolve(result.rowsAffected);
-        },
-        (_, error) => {
-          reject(error);
-        }
-      );
-    });
+  return fetch(SERVER_URL+`/api/updateTitle/${bookId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ newTitle: newTitle }),
   });
 }
 
 export const updateImage = (bookId, newImage) => {
-  db.transaction((tx) => {
-    tx.executeSql(
-      'UPDATE books SET image = ? WHERE id = ?',
-      [newImage, bookId],
-      () => {
-        console.log('Image updated successfully');
-      },
-      (error) => {
-        console.error('Error updating image:', error);
-      }
-    );
+  return fetch(SERVER_URL+`/api/updateImage/${bookId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ newImage: newImage }),
   });
 };
 
 export function updateAuthor(bookId, newAuthor) {
-  return new Promise((resolve, reject) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        'UPDATE books SET author = ? WHERE id = ?',
-        [newAuthor, bookId],
-        (_, result) => {
-          resolve(result.rowsAffected);
-        },
-        (_, error) => {
-          reject(error);
-        }
-      );
-    });
+  return fetch(SERVER_URL+`/api/updateAuthor/${bookId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ newAuthor: newAuthor }),
   });
 }
 
 export function updateDescription(bookId, newDescription) {
-  return new Promise((resolve, reject) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        'UPDATE books SET description = ? WHERE id = ?',
-        [newDescription, bookId],
-        (_, result) => {
-          resolve(result.rowsAffected);
-        },
-        (_, error) => {
-          reject(error);
-        }
-      );
-    });
+  return fetch(SERVER_URL+`/api/updateDesc/${bookId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ newDescription: newDescription }),
   });
 }
 
 export function updateAvailability(bookId, newAvailability) {
-  return new Promise((resolve, reject) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        'UPDATE books SET availability = ? WHERE id = ?',
-        [newAvailability, bookId],
-        (_, result) => {
-          console.log('Rows affected:', result.rowsAffected);
-          resolve(result.rowsAffected);
-        },
-        (_, error) => {
-          reject(error);
-        }
-      );
-    });
+  console.log(newAvailability);
+  return fetch(SERVER_URL+`/api/updateAvai/${bookId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ newAvailability: newAvailability }),
   });
 }
 
 export function removeBorrowedBook(bookId) {
-  return new Promise((resolve, reject) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        'DELETE FROM borrowedBook WHERE id = ?',
-        [bookId],
-        (_, result) => {
-          resolve(result.rowsAffected);
-        },
-        (_, error) => {
-          reject(error);
-        }
-      );
-    });
+  return fetch(SERVER_URL+`/api/borrowedBook/`+bookId, {
+    method: 'DELETE',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ id: bookId }),
   });
 }

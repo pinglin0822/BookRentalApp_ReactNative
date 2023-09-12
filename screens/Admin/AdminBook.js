@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, TouchableHighlight, Alert, Image } from 'react-native';
 import SQLite from 'react-native-sqlite-storage';
-import { deleteBook } from '../../services/BooksService';
+import { deleteBook,getBookList } from '../../services/BooksService';
 import { SwipeListView } from 'react-native-swipe-list-view';
 
 const db = SQLite.openDatabase({ name: 'mydb.db', location: 'default' });
@@ -16,30 +16,11 @@ export function AdminBook({ navigation }) {
   }, []);
 
   const fetchDataFromDatabase = () => {
-    db.transaction(tx => {
-      tx.executeSql(
-        'SELECT id, image,title, author, description, availability FROM books',
-        [],
-        (_, result) => {
-          const fetchedData = [];
-          for (let i = 0; i < result.rows.length; i++) {
-            const row = result.rows.item(i);
-            fetchedData.push({
-              id: row.id,
-              image: row.image,
-              title: row.title,
-              author: row.author,
-              description: row.description,
-              availability: row.availability,
-            });
-          }
+    getBookList()
+      .then((books)=>{
+        const fetchedData = books;
           setTableData(fetchedData);
-        },
-        (_, error) => {
-          console.log('Error fetching data:', error);
-        }
-      );
-    });
+      })
   };
 
 
@@ -59,6 +40,7 @@ export function AdminBook({ navigation }) {
           onPress: async () => {
             try {
               const removedBookId = tableData[index].id;
+              console.log('deleting book with id: '+removedBookId)
               await deleteBook(removedBookId);
               const updatedTableData = tableData.filter((_, i) => i !== index);
               setTableData(updatedTableData);
