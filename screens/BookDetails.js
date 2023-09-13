@@ -4,6 +4,7 @@ import { getBook, borrowBook, checkBookAvailability, toggleBookFavoriteStatus, i
 import DatePicker from 'react-native-date-picker'
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
+
 export function BookDetails({ route, navigation }) {
   const { bookID } = route.params;
   const [book, setBook] = useState({});
@@ -205,7 +206,6 @@ export function BookDetails({ route, navigation }) {
             date={borrowDate}
             minimumDate={new Date()}
             onConfirm={(selectedDate) => {
-              setOpen(false);
               setBorrowDate(selectedDate);
               onBorrowBook(selectedDate);
             }}

@@ -6,6 +6,7 @@ import { Book } from '../../components/Book';
 import DatePicker from 'react-native-date-picker'
 
 export function Favorite() {
+
   const [favoriteBooks, setFavoriteBooks] = useState([]);
   const [selectedBooks, setSelectedBooks] = useState([]);
   const [selectedStartDate, setSelectedStartDate] = useState(new Date());
@@ -28,27 +29,27 @@ export function Favorite() {
     }
   }
 
-  async function toggleBookSelection(bookId) {
-    const isAvailable = await checkBookAvailability(bookId);
+  async function toggleBookSelection(bookID) {
+    const isAvailable = await checkBookAvailability(bookID);
 
     if (isAvailable == 0) {
       Alert.alert('Book Not Available', 'This book is currently not available for borrowing.');
       return;
     }
 
-    const updatedSelectedBooks = selectedBooks.includes(bookId)
-      ? selectedBooks.filter(id => id !== bookId)
-      : [...selectedBooks, bookId];
+    const updatedSelectedBooks = selectedBooks.includes(bookID)
+      ? selectedBooks.filter(id => id !== bookID)
+      : [...selectedBooks, bookID];
 
     if (updatedSelectedBooks.length > 5) {
       Alert.alert('Limit Exceeded', 'You can select up to 5 books.');
       return;
     }
     setSelectedBooks(prevSelectedBooks => {
-      if (prevSelectedBooks.includes(bookId)) {
-        return prevSelectedBooks.filter(id => id !== bookId);
+      if (prevSelectedBooks.includes(bookID)) {
+        return prevSelectedBooks.filter(id => id !== bookID);
       } else {
-        return [...prevSelectedBooks, bookId];
+        return [...prevSelectedBooks, bookID];
       }
     });
     setSelectedBooks(updatedSelectedBooks);
@@ -65,30 +66,40 @@ export function Favorite() {
 
   const handleDateConfirm = async (selectedDate) => {
     try {
-      const borrowDate = selectedDate.toLocaleDateString();
-      const borrowedBooks = await Promise.all(selectedBooks.map(async (bookId) => {
-        const book = await getBook(bookId);
-        const returnDate = new Date(borrowDate);
+
+      const formattedSelectedDate = selectedDate.toLocaleDateString();
+      const borrowedBooks = await Promise.all(selectedBooks.map(async (bookID) => {
+        const book = await getBook(bookID);
+
+        const returnDate = new Date(selectedDate);
         returnDate.setDate(returnDate.getDate() + 14);
+
+
         const formattedReturnDate = returnDate.toLocaleDateString();
 
-        await updateAvailability(bookId, false);
-        await borrowBook(bookId, borrowDate, formattedReturnDate);
+        await updateAvailability(bookID, false);
+        await borrowBook(bookID, formattedSelectedDate, formattedReturnDate);
         setOpen(false);
 
-        return { book, borrowDate, formattedReturnDate };
+        return { book };
       }));
 
-      const formattedReturnDates = borrowedBooks.map(({ formattedReturnDate }) => formattedReturnDate);
+      const returnDate = new Date(selectedDate);
+      returnDate.setDate(returnDate.getDate() + 14);
+      const formattedReturnDate = returnDate.toLocaleDateString();
+
       // Generate and display successful details
       const numBorrowedBooks = borrowedBooks.length;
       const detailsMessage = [
         `Borrowed Successful..`,
         `You had borrowed ${numBorrowedBooks} book(s):`,
         ...borrowedBooks.map(({ book }) => `- ${book.title}`),
-        `Borrow Date: ${borrowDate}`,
-        `Return Date: ${formattedReturnDates.join(', ')}`,
+        `Borrow Date: ${formattedSelectedDate}`,
+        `Return Date: ${formattedReturnDate}`,
       ].join('\n');
+
+      // Unselect all the books after borrowing
+      setSelectedBooks([]);
 
       Alert.alert(
         'Borrow Successful',
@@ -137,8 +148,8 @@ export function Favorite() {
         mode='date'
         open={open}
         date={selectedStartDate}
+        minimumDate={new Date()}
         onConfirm={(selectedDate) => {
-          setOpen(false);
           setSelectedStartDate(selectedDate);
           handleDateConfirm(selectedDate);
         }}
