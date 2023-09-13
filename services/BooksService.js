@@ -137,6 +137,11 @@ export function getBorrowedBooks() {
   .then((response) => response.json())
 }
 
+export function getBorrowedBooksone(bookId) {
+  return fetch(SERVER_URL+"/api/borrowedBooks/"+bookId)
+  .then((response) => response.json())
+}
+
 export function deleteBook(bookId) {
   return fetch(SERVER_URL+`/api/books/`+bookId, {
     method: 'DELETE',

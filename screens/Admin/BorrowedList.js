@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Button, FlatList, StyleSheet, Alert, Text, Image, TouchableOpacity } from 'react-native';
-import { getBorrowedBooks, removeBorrowedBook, updateAvailability } from '../../services/BooksService';
+import { getBorrowedBooks, removeBorrowedBook, updateAvailability,getBorrowedBooksone } from '../../services/BooksService';
 
 export function BorrowedList({ image, navigation }) {
   const [borrowedBooks, setBorrowedBooks] = useState([]);
@@ -23,7 +23,7 @@ export function BorrowedList({ image, navigation }) {
     const updatedSelectedBooks = selectedBooks.includes(bookId)
       ? selectedBooks.filter(id => id !== bookId)
       : [...selectedBooks, bookId];
-
+    console.log(updatedSelectedBooks);
     setSelectedBooks(updatedSelectedBooks);
   }
 
@@ -61,9 +61,15 @@ export function BorrowedList({ image, navigation }) {
           style: 'destructive',
           onPress: async () => {
             try {
+              console.log('---------------------------------------------------------------------')
+              console.log(selectedBooks)
               for (const bookId of selectedBooks) {
-                await updateAvailability(bookId, true);
-                console.log('Availability updated');
+                await getBorrowedBooksone(bookId)
+                .then((books)=>{
+                  console.log(books.bookId);
+                  updateAvailability(books.bookId, true);
+                  console.log('Availability updated');
+                })
                 await removeBorrowedBook(bookId);
                 console.log('removed updated');
               }

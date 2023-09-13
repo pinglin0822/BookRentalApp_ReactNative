@@ -295,6 +295,25 @@ def get_borrowed_books():
 
     return jsonify(book_rows_as_dict), 200
 
+@app.route('/api/borrowedBooks/<int:book_id>', methods=['GET'])
+def get_borrowed_books_detail(book_id):
+    db = sqlite3.connect(DB)
+    cursor = db.cursor()
+    cursor.execute('SELECT * FROM borrowedBook WHERE id = ?', (book_id,))
+    row = cursor.fetchone()
+    db.close()
+
+    if row is None:
+        abort(404)  # Book not found
+
+    book_dict = {
+        'id': row[0],
+        'bookId': row[1],
+        'borrowDate': row[2],
+        'returnDate': row[3],
+        }
+    return jsonify(book_dict), 200
+
 @app.route('/api/books/<int:book>', methods=['DELETE'])
 def delete(book):
     if not request.json:
