@@ -8,7 +8,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 export function BookDetails({ route, navigation }) {
   const { bookID } = route.params;
   const [book, setBook] = useState({});
-  const { setFavoriteBooks } = route.params;
+  const [setFavoriteBooks] = useState([]);
   const [isFavorite, setIsFavorite] = useState(false);
   const [notification, setNotification] = useState({ message: '', isVisible: false });
   const [borrowDate, setBorrowDate] = useState(new Date());
@@ -85,45 +85,47 @@ export function BookDetails({ route, navigation }) {
     }
   };
 
+
+  const handleBorrowBooks = async () => {
+    const isAvailable = await checkBookAvailability(bookID);
+    if (isAvailable != 1) {
+      Alert.alert('Book Not Available', 'This book is currently not available for borrowing.');
+      return;
+    }
+    // Show the calendar picker modal
+    setOpen(true)
+  };
+
   //Borrow books
   const onBorrowBook = async (selectedDate) => {
     try {
-      const isAvailable = await checkBookAvailability(bookID);
+      const formattedSelectedDate = selectedDate.toLocaleDateString();
+      const returnDate = new Date(selectedDate);
+      returnDate.setDate(returnDate.getDate() + 14); // Adding 14 days
 
-      if (isAvailable == 1) {
-        setOpen(true);
+      const formattedReturnDate = returnDate.toLocaleDateString();
 
-        const returnDate = new Date(selectedDate);
-        returnDate.setDate(returnDate.getDate() + 14); // Adding 14 days
+      await updateAvailability(bookID, false);
+      await borrowBook(bookID, formattedSelectedDate, formattedReturnDate);
 
-        const formattedSelectedDate = selectedDate.toLocaleDateString();
-        const formattedReturnDate = returnDate.toLocaleDateString();
+      setNotification({ message: 'Book Borrowed Successfully', isVisible: true });
+      setOpen(false);
 
-        await updateAvailability(bookID, false);
-        await borrowBook(bookID, formattedSelectedDate, formattedReturnDate);
+      try {
+        const detailsMessage = `${book.title} \n\nBorrowed on: \n${formattedSelectedDate}\n\nPlease return it by: \n${formattedReturnDate}`;
 
-        setNotification({ message: 'Book Borrowed Successfully', isVisible: true });
-        setOpen(false);
+        Alert.alert(
+          'Borrow Successful',
+          `You have successfully borrowed ${detailsMessage}`,
+          [{ text: 'OK', onPress: () => navigation.goBack() }]
 
-        try {
-          const detailsMessage = `${book.title} \n\nBorrowed on: \n${formattedSelectedDate}\n\nPlease return it by: \n${formattedReturnDate}`;
+        );
 
-          Alert.alert(
-            'Borrow Successful',
-            `You have successfully borrowed ${detailsMessage}`,
-            [{ text: 'OK', onPress: () => navigation.goBack() }]
-
-          );
-
-        } catch (error) {
-          console.error('Error borrowing book:', error);
-          // Handle the error (e.g., show an error message to the user)
-        }
-
-      } else {
-        Alert.alert('Book Not Available', 'This book is currently not available for borrowing.');
-        return;
+      } catch (error) {
+        console.error('Error borrowing book:', error);
       }
+
+
     } catch (error) {
       console.error('Error borrowing book:', error);
     }
@@ -181,7 +183,7 @@ export function BookDetails({ route, navigation }) {
               borderRadius: 5,
               padding: 10,
             }}
-            onPress={onBorrowBook}
+            onPress={handleBorrowBooks}
 
           >
             <Image
